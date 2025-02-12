@@ -5,7 +5,7 @@ use world;
 delimiter &&
 create procedure pro_country(in country_code char(3))
 begin
-	select c.id, c.name as city_name, c.population
+    select c.id, c.name as city_name, c.population
     from city c
     where c.countrycode = country_code;
 end &&
@@ -18,11 +18,11 @@ drop procedure pro_country;
 -- Bài 2
 delimiter &&
 create procedure CalculatePopulation(
-	in p_countryCode char(3),
+    in p_countryCode char(3),
     out total_population int
 ) 
 begin
-	select sum(c.population)
+    select sum(c.population)
     from city c
     where c.countrycode = p_countrycode;
 end &&
@@ -37,7 +37,7 @@ drop procedure CalculatePopulation;
 delimiter &&
 create procedure pro_language(in country_language char(30))
 begin
-	select cl.countrycode, cl.language, cl.percentage
+    select cl.countrycode, cl.language, cl.percentage
     from countrylanguage cl
     where cl.percentage > 50 and cl.language = country_language;
 end &&
@@ -50,15 +50,20 @@ drop procedure pro_language;
 -- Bài 4  
 -- 2
 delimiter &&
-create procedure UpdateCityPopulation(in city_id int, in new_population int)
+create procedure UpdateCityPopulation(inout city_id int, in new_population int)
 begin
-	update city
+    update city
     set population = new_population
     where id = city_id;
+    
+    select id, name, population
+    from city where id = city_id;
 end &&
 delimiter &&
 -- 3
-call UpdateCityPopulation(314, 12000000);
+set @city_id = 314;
+set @new_population = 11000000;
+call UpdateCityPopulation(@city_id, @new_population);
 -- 4
 drop procedure UpdateCityPopulation;
 
@@ -67,7 +72,7 @@ drop procedure UpdateCityPopulation;
 delimiter &&
 create procedure GetLargeCitiesByCountry(in country_code char(3))
 begin
-	select c.id as cityId, c.name as cityName, c.population
+    select c.id as cityId, c.name as cityName, c.population
     from city c 
     where c.population > 1000000 and c.countrycode = country_code
     order by c.population desc;
@@ -83,7 +88,7 @@ drop procedure GetLargeCitiesByCountry;
 delimiter &&
 create procedure GetCountriesWithLargeCities()
 begin
-	select ct.name as countryName, sum(c.population) as total_population
+    select ct.name as countryName, sum(c.population) as total_population
     from country ct 
     join city c on ct.code = c.countrycode
     where ct.continent = 'Asia'
@@ -102,7 +107,7 @@ drop procedure GetCountriesWithLargeCities();
 delimiter &&
 create procedure GetEnglishSpeakingCountriesWithCities(in country_language char(30))
 begin
-	select ct.name as countryName, sum(c.population) as total_population
+    select ct.name as countryName, sum(c.population) as total_population
     from country ct
     join city c on c.countrycode = ct.code
     join countrylanguage cl on cl.countrycode = ct.code
@@ -121,7 +126,7 @@ drop procedure GetEnglishSpeakingCountriesWithCities;
 delimiter &&
 create procedure GetCountriesByCityNames()
 begin
-	select ct.name as countryName, cl.language as OfficialLanguage, sum(c.population) as total_population
+    select ct.name as countryName, cl.language as OfficialLanguage, sum(c.population) as total_population
     from city c
     join country ct on ct.code = c.countrycode
     join countrylanguage cl on cl.countrycode = ct.code
@@ -140,7 +145,7 @@ drop procedure GetCountriesByCityNames;
 -- 2
 create view CountryLanguageView
 as 
-	select ct.code as countryCode, ct.name as countryName, cl.language, cl.isOfficial
+    select ct.code as countryCode, ct.name as countryName, cl.language, cl.isOfficial
     from country ct
     join countrylanguage cl on cl.countrycode = ct.code
     where cl.isOfficial = 'T';
@@ -150,7 +155,7 @@ select * from CountryLanguageView;
 delimiter &&
 create procedure GetLargeCitiesWithEnglish()
 begin
-	select c.name as cityName, ct.name as countryName, c.population
+    select c.name as cityName, ct.name as countryName, c.population
     from city c
     join country ct on ct.code = c.countrycode
     join countrylanguage cl on cl.CountryCode = ct.code
@@ -167,7 +172,7 @@ drop procedure GetLargeCitiesWithEnglish;
 -- 2
 create view OfficialLanguageView
 as
-	select ct.code as countryCode, ct.name as countryName, cl.language
+    select ct.code as countryCode, ct.name as countryName, cl.language
     from country ct 
     join countrylanguage cl on cl.countrycode = ct.code
     where cl.isofficial = 'T';
@@ -181,10 +186,10 @@ create index idx_name on city(name);
 -- 5
 delimiter &&
 create procedure GetSpecialCountriesAndCities(
-	language_name char(30)
+    language_name char(30)
 )
 begin
-	select ct.name, c.name, c.population, ct.population
+    select ct.name, c.name, c.population, ct.population
     from city c join country ct on c.countrycode = ct.code
     join countrylanguage cl on ct.code = cl.countrycode
     where ct.population > 5000000 and cl.language like language_name and c.name like 'New%'
